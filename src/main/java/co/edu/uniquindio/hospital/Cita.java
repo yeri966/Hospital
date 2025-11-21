@@ -12,34 +12,23 @@ public class Cita {
     private LocalTime hora;
     private double precio;
     private String motivo;
-    private EstadoCita estado; // NUEVO ATRIBUTO
+    private EstadoCita estado;
+    private String observaciones; // Campo opcional
+    private String diagnostico;   // Campo opcional
 
-    // Constructor sin estado (por defecto PROGRAMADA)
-    public Cita(String id, Paciente paciente, Medico medico, Especialidad especialidad,
-                LocalDate fecha, LocalTime hora, double precio, String motivo) {
-        this.id = id;
-        this.paciente = paciente;
-        this.medico = medico;
-        this.especialidad = especialidad;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.precio = precio;
-        this.motivo = motivo;
-        this.estado = EstadoCita.PROGRAMADA; // Estado por defecto
-    }
-
-    // Constructor completo con estado
-    public Cita(String id, Paciente paciente, Medico medico, Especialidad especialidad,
-                LocalDate fecha, LocalTime hora, double precio, String motivo, EstadoCita estado) {
-        this.id = id;
-        this.paciente = paciente;
-        this.medico = medico;
-        this.especialidad = especialidad;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.precio = precio;
-        this.motivo = motivo;
-        this.estado = estado;
+    // Constructor privado - solo accesible desde el Builder
+    private Cita(CitaBuilder builder) {
+        this.id = builder.id;
+        this.paciente = builder.paciente;
+        this.medico = builder.medico;
+        this.especialidad = builder.especialidad;
+        this.fecha = builder.fecha;
+        this.hora = builder.hora;
+        this.precio = builder.precio;
+        this.motivo = builder.motivo;
+        this.estado = builder.estado;
+        this.observaciones = builder.observaciones;
+        this.diagnostico = builder.diagnostico;
     }
 
     // Getters y Setters
@@ -115,6 +104,22 @@ public class Cita {
         this.estado = estado;
     }
 
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
+    }
+
+    public String getDiagnostico() {
+        return diagnostico;
+    }
+
+    public void setDiagnostico(String diagnostico) {
+        this.diagnostico = diagnostico;
+    }
+
     @Override
     public String toString() {
         return "Cita{" +
@@ -127,5 +132,123 @@ public class Cita {
                 ", precio=" + precio +
                 ", estado=" + estado +
                 '}';
+    }
+
+    // ==================== PATRÓN BUILDER ====================
+
+    /**
+     * PATRÓN CREACIONAL: BUILDER
+     *
+     * Clase Builder estática interna para construir objetos Cita de manera flexible
+     * Permite crear citas con diferentes combinaciones de atributos opcionales
+     */
+    public static class CitaBuilder {
+        // Atributos obligatorios
+        private final String id;
+        private final Paciente paciente;
+        private final Medico medico;
+        private final LocalDate fecha;
+        private final LocalTime hora;
+
+        // Atributos opcionales con valores por defecto
+        private Especialidad especialidad;
+        private double precio = 0.0;
+        private String motivo = "";
+        private EstadoCita estado = EstadoCita.PROGRAMADA;
+        private String observaciones = "";
+        private String diagnostico = "";
+
+        /**
+         * Constructor del Builder con parámetros obligatorios
+         */
+        public CitaBuilder(String id, Paciente paciente, Medico medico,
+                           LocalDate fecha, LocalTime hora) {
+            this.id = id;
+            this.paciente = paciente;
+            this.medico = medico;
+            this.fecha = fecha;
+            this.hora = hora;
+        }
+
+        /**
+         * Métodos para establecer atributos opcionales (fluent interface)
+         */
+        public CitaBuilder especialidad(Especialidad especialidad) {
+            this.especialidad = especialidad;
+            return this;
+        }
+
+        public CitaBuilder precio(double precio) {
+            this.precio = precio;
+            return this;
+        }
+
+        public CitaBuilder motivo(String motivo) {
+            this.motivo = motivo;
+            return this;
+        }
+
+        public CitaBuilder estado(EstadoCita estado) {
+            this.estado = estado;
+            return this;
+        }
+
+        public CitaBuilder observaciones(String observaciones) {
+            this.observaciones = observaciones;
+            return this;
+        }
+
+        public CitaBuilder diagnostico(String diagnostico) {
+            this.diagnostico = diagnostico;
+            return this;
+        }
+
+        /**
+         * Método para construir el objeto Cita
+         * Aplica validaciones antes de crear la instancia
+         */
+        public Cita build() {
+            // Validaciones
+            validarCita();
+
+            // Si no se especifica especialidad, tomar la del médico
+            if (this.especialidad == null && this.medico != null) {
+                this.especialidad = this.medico.getEspecialidad();
+            }
+
+            return new Cita(this);
+        }
+
+        /**
+         * Validaciones de la cita antes de construirla
+         */
+        private void validarCita() {
+            if (id == null || id.trim().isEmpty()) {
+                throw new IllegalArgumentException("El ID de la cita es obligatorio");
+            }
+            if (paciente == null) {
+                throw new IllegalArgumentException("El paciente es obligatorio");
+            }
+            if (medico == null) {
+                throw new IllegalArgumentException("El médico es obligatorio");
+            }
+            if (fecha == null) {
+                throw new IllegalArgumentException("La fecha es obligatoria");
+            }
+            if (hora == null) {
+                throw new IllegalArgumentException("La hora es obligatoria");
+            }
+            if (precio < 0) {
+                throw new IllegalArgumentException("El precio no puede ser negativo");
+            }
+        }
+    }
+
+    /**
+     * Método estático para obtener un nuevo Builder
+     */
+    public static CitaBuilder builder(String id, Paciente paciente, Medico medico,
+                                      LocalDate fecha, LocalTime hora) {
+        return new CitaBuilder(id, paciente, medico, fecha, hora);
     }
 }

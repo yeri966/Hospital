@@ -47,7 +47,7 @@ public class GestionCitasController {
 
     @FXML
     void initialize() {
-        System.out.println("=== INICIALIZANDO CONTROLADOR GESTIÓN DE CITAS ===");
+        System.out.println("=== INICIALIZANDO CONTROLADOR GESTIÓN DE CITAS (CON BUILDER) ===");
         configurarComboBoxes();
         configurarTabla();
         cargarCitas();
@@ -231,13 +231,13 @@ public class GestionCitasController {
                 } else {
                     setText(item);
                     switch (item) {
-                        case "PROGRAMADA":
+                        case "Programada":
                             setStyle("-fx-text-fill: #2196F3; -fx-font-weight: bold;");
                             break;
-                        case "ATENDIDA":
+                        case "Atendida":
                             setStyle("-fx-text-fill: #4CAF50; -fx-font-weight: bold;");
                             break;
-                        case "CANCELADA":
+                        case "Cancelada":
                             setStyle("-fx-text-fill: #F44336; -fx-font-weight: bold;");
                             break;
                         default:
@@ -284,7 +284,8 @@ public class GestionCitasController {
     }
 
     /**
-     * Agrega una nueva cita
+     * ==================== PATRÓN BUILDER ====================
+     * Agrega una nueva cita usando el patrón Builder
      */
     @FXML
     void onAgregar(ActionEvent event) {
@@ -303,17 +304,22 @@ public class GestionCitasController {
             // Parsear el precio
             double precio = Double.parseDouble(txtPrecio.getText().trim());
 
-            // Crear nueva cita
-            Cita nuevaCita = new Cita(
-                    id,
-                    cmbPaciente.getValue(),
-                    cmbMedico.getValue(),
-                    cmbEspecialidad.getValue(),
-                    dpFecha.getValue(),
-                    hora,
-                    precio,
-                    txtMotivo.getText().trim()
-            );
+            // ==================== USAR PATRÓN BUILDER ====================
+            System.out.println("✨ Creando cita usando patrón BUILDER...");
+
+            Cita nuevaCita = Cita.builder(
+                            id,
+                            cmbPaciente.getValue(),
+                            cmbMedico.getValue(),
+                            dpFecha.getValue(),
+                            hora)
+                    .especialidad(cmbEspecialidad.getValue())
+                    .precio(precio)
+                    .motivo(txtMotivo.getText().trim())
+                    .estado(EstadoCita.PROGRAMADA)
+                    .build();
+
+            System.out.println("✅ Cita construida exitosamente con Builder");
 
             // Verificar disponibilidad
             if (!verificarDisponibilidad(nuevaCita)) {
@@ -327,7 +333,7 @@ public class GestionCitasController {
             hospital.addCita(nuevaCita);
 
             mostrarAlerta("Éxito",
-                    "Cita agregada correctamente",
+                    "✨ Cita agregada correctamente usando patrón Builder",
                     Alert.AlertType.INFORMATION);
 
             cargarCitas();
@@ -337,11 +343,21 @@ public class GestionCitasController {
             mostrarAlerta("Error de Formato",
                     "El precio debe ser un número válido",
                     Alert.AlertType.ERROR);
+        } catch (IllegalArgumentException e) {
+            mostrarAlerta("Error de Validación",
+                    "Error al construir la cita: " + e.getMessage(),
+                    Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            mostrarAlerta("Error",
+                    "Error inesperado: " + e.getMessage(),
+                    Alert.AlertType.ERROR);
+            e.printStackTrace();
         }
     }
 
     /**
-     * Actualiza una cita existente
+     * ==================== PATRÓN BUILDER ====================
+     * Actualiza una cita existente usando Builder para validación
      */
     @FXML
     void onActualizar(ActionEvent event) {
@@ -364,27 +380,45 @@ public class GestionCitasController {
             // Parsear el precio
             double precio = Double.parseDouble(txtPrecio.getText().trim());
 
-            // Actualizar datos
-            citaSeleccionada.setPaciente(cmbPaciente.getValue());
-            citaSeleccionada.setMedico(cmbMedico.getValue());
-            citaSeleccionada.setEspecialidad(cmbEspecialidad.getValue());
-            citaSeleccionada.setFecha(dpFecha.getValue());
-            citaSeleccionada.setHora(hora);
-            citaSeleccionada.setPrecio(precio);
-            citaSeleccionada.setMotivo(txtMotivo.getText().trim());
+            // ==================== USAR BUILDER PARA VALIDACIÓN ====================
+            // Crear una cita temporal usando Builder para validar los datos
+            System.out.println("✨ Validando actualización con patrón BUILDER...");
+
+            Cita citaValidada = Cita.builder(
+                            citaSeleccionada.getId(),
+                            cmbPaciente.getValue(),
+                            cmbMedico.getValue(),
+                            dpFecha.getValue(),
+                            hora)
+                    .especialidad(cmbEspecialidad.getValue())
+                    .precio(precio)
+                    .motivo(txtMotivo.getText().trim())
+                    .estado(citaSeleccionada.getEstado()) // Mantener el estado actual
+                    .build();
+
+            System.out.println("✅ Validación exitosa con Builder");
 
             // Verificar disponibilidad (excluyendo la cita actual)
-            if (!verificarDisponibilidadActualizacion(citaSeleccionada)) {
+            if (!verificarDisponibilidadActualizacion(citaValidada)) {
                 mostrarAlerta("Horario No Disponible",
                         "El médico ya tiene una cita programada en ese horario",
                         Alert.AlertType.WARNING);
                 return;
             }
 
+            // Actualizar los datos de la cita original
+            citaSeleccionada.setPaciente(citaValidada.getPaciente());
+            citaSeleccionada.setMedico(citaValidada.getMedico());
+            citaSeleccionada.setEspecialidad(citaValidada.getEspecialidad());
+            citaSeleccionada.setFecha(citaValidada.getFecha());
+            citaSeleccionada.setHora(citaValidada.getHora());
+            citaSeleccionada.setPrecio(citaValidada.getPrecio());
+            citaSeleccionada.setMotivo(citaValidada.getMotivo());
+
             hospital.updateCita(citaSeleccionada);
 
             mostrarAlerta("Éxito",
-                    "Cita actualizada correctamente",
+                    "✨ Cita actualizada correctamente (validada con Builder)",
                     Alert.AlertType.INFORMATION);
 
             tablaCitas.refresh();
@@ -395,6 +429,15 @@ public class GestionCitasController {
             mostrarAlerta("Error de Formato",
                     "El precio debe ser un número válido",
                     Alert.AlertType.ERROR);
+        } catch (IllegalArgumentException e) {
+            mostrarAlerta("Error de Validación",
+                    "Error al validar la cita: " + e.getMessage(),
+                    Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            mostrarAlerta("Error",
+                    "Error inesperado: " + e.getMessage(),
+                    Alert.AlertType.ERROR);
+            e.printStackTrace();
         }
     }
 
