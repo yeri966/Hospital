@@ -36,30 +36,33 @@ public class DashboardAdminController {
 
     @FXML
     void onPacientes(ActionEvent event) {
+        System.out.println("Cargando vista de Pacientes...");
         cambiarEstiloBotonActivo(btnPacientes);
-        cargarVistaEnContentArea("/co/edu/uniquindio/hospital/GestionPacientes.fxml");
+        cargarVistaEnContentArea("/co/edu/uniquindio/hospital/GestionPaciente.fxml");
     }
 
     @FXML
     void onMedicos(ActionEvent event) {
+        System.out.println("Cargando vista de Médicos...");
         cambiarEstiloBotonActivo(btnMedicos);
-        cargarVistaEnContentArea("/co/edu/uniquindio/hospital/GestionMedicos.fxml");
+        cargarVistaEnContentArea("/co/edu/uniquindio/hospital/GestionMedico.fxml");
     }
 
     @FXML
     void onCitas(ActionEvent event) {
+        System.out.println("Cargando vista de Citas...");
         cambiarEstiloBotonActivo(btnCitas);
-        cargarVistaEnContentArea("/co/edu/uniquindio/hospital/GestionCitas.fxml");
+        cargarVistaEnContentArea("/co/edu/uniquindio/hospital/GestionCita.fxml");
     }
 
     @FXML
     void onCerrarSesion(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/co/edu/uniquindio/hospital/Login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/co/edu/uniquindio/hospital/login.fxml"));
             Parent root = loader.load();
 
             Stage stage = (Stage) btnCerrarSesion.getScene().getWindow();
-            stage.setScene(new Scene(root, 500, 400));
+            stage.setScene(new Scene(root));
             stage.setTitle("Login - Hospital");
             stage.show();
         } catch (IOException e) {
@@ -97,7 +100,19 @@ public class DashboardAdminController {
 
     private void cargarVistaEnContentArea(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            System.out.println("Intentando cargar: " + fxmlPath);
+
+            // CORRECCIÓN: Usar la clase actual para obtener el recurso
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource(fxmlPath));
+
+            // Verificar que el recurso existe
+            if (loader.getLocation() == null) {
+                System.err.println("ERROR: No se encontró el archivo: " + fxmlPath);
+                mostrarAlerta("Error", "No se encontró el archivo: " + fxmlPath, Alert.AlertType.ERROR);
+                return;
+            }
+
             Node vista = loader.load();
 
             contentArea.getChildren().clear();
@@ -108,10 +123,11 @@ public class DashboardAdminController {
             AnchorPane.setLeftAnchor(vista, 0.0);
             AnchorPane.setRightAnchor(vista, 0.0);
 
-            System.out.println("Vista cargada: " + fxmlPath);
+            System.out.println("✓ Vista cargada exitosamente: " + fxmlPath);
         } catch (IOException e) {
             e.printStackTrace();
-            mostrarAlerta("Error", "No se pudo cargar la vista: " + fxmlPath, Alert.AlertType.ERROR);
+            System.err.println("ERROR al cargar vista: " + fxmlPath);
+            mostrarAlerta("Error", "No se pudo cargar la vista: " + fxmlPath + "\nError: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 

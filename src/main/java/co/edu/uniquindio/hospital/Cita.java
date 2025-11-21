@@ -2,67 +2,117 @@ package co.edu.uniquindio.hospital;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 public class Cita {
     private String id;
     private Paciente paciente;
     private Medico medico;
+    private Especialidad especialidad;
     private LocalDate fecha;
     private LocalTime hora;
     private double precio;
-    private Especialidad especialidad;
     private String motivo;
-    private String estado; // "PROGRAMADA", "CANCELADA", "COMPLETADA"
+    private EstadoCita estado; // NUEVO ATRIBUTO
 
-    public Cita() {
-        this.estado = "PROGRAMADA";
-    }
-
-    public Cita(String id, Paciente paciente, Medico medico, LocalDate fecha,
-                LocalTime hora, double precio, Especialidad especialidad, String motivo) {
+    // Constructor sin estado (por defecto PROGRAMADA)
+    public Cita(String id, Paciente paciente, Medico medico, Especialidad especialidad,
+                LocalDate fecha, LocalTime hora, double precio, String motivo) {
         this.id = id;
         this.paciente = paciente;
         this.medico = medico;
+        this.especialidad = especialidad;
         this.fecha = fecha;
         this.hora = hora;
         this.precio = precio;
-        this.especialidad = especialidad;
         this.motivo = motivo;
-        this.estado = "PROGRAMADA";
+        this.estado = EstadoCita.PROGRAMADA; // Estado por defecto
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    // Constructor completo con estado
+    public Cita(String id, Paciente paciente, Medico medico, Especialidad especialidad,
+                LocalDate fecha, LocalTime hora, double precio, String motivo, EstadoCita estado) {
+        this.id = id;
+        this.paciente = paciente;
+        this.medico = medico;
+        this.especialidad = especialidad;
+        this.fecha = fecha;
+        this.hora = hora;
+        this.precio = precio;
+        this.motivo = motivo;
+        this.estado = estado;
+    }
 
-    public Paciente getPaciente() { return paciente; }
-    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+    // Getters y Setters
+    public String getId() {
+        return id;
+    }
 
-    public Medico getMedico() { return medico; }
-    public void setMedico(Medico medico) { this.medico = medico; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public LocalDate getFecha() { return fecha; }
-    public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+    public Paciente getPaciente() {
+        return paciente;
+    }
 
-    public LocalTime getHora() { return hora; }
-    public void setHora(LocalTime hora) { this.hora = hora; }
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
+    }
 
-    public double getPrecio() { return precio; }
-    public void setPrecio(double precio) { this.precio = precio; }
+    public Medico getMedico() {
+        return medico;
+    }
 
-    public Especialidad getEspecialidad() { return especialidad; }
-    public void setEspecialidad(Especialidad especialidad) { this.especialidad = especialidad; }
+    public void setMedico(Medico medico) {
+        this.medico = medico;
+    }
 
-    public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
+    public Especialidad getEspecialidad() {
+        return especialidad;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public void setEspecialidad(Especialidad especialidad) {
+        this.especialidad = especialidad;
+    }
 
-    public String getFechaHoraFormateada() {
-        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-        return fecha.format(formatoFecha) + " - " + hora.format(formatoHora);
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    public LocalTime getHora() {
+        return hora;
+    }
+
+    public void setHora(LocalTime hora) {
+        this.hora = hora;
+    }
+
+    public double getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(double precio) {
+        this.precio = precio;
+    }
+
+    public String getMotivo() {
+        return motivo;
+    }
+
+    public void setMotivo(String motivo) {
+        this.motivo = motivo;
+    }
+
+    public EstadoCita getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoCita estado) {
+        this.estado = estado;
     }
 
     @Override
@@ -71,11 +121,11 @@ public class Cita {
                 "id='" + id + '\'' +
                 ", paciente=" + (paciente != null ? paciente.getNombre() : "null") +
                 ", medico=" + (medico != null ? medico.getNombre() : "null") +
+                ", especialidad=" + especialidad +
                 ", fecha=" + fecha +
                 ", hora=" + hora +
                 ", precio=" + precio +
-                ", especialidad=" + especialidad +
-                ", estado='" + estado + '\'' +
+                ", estado=" + estado +
                 '}';
     }
 }
