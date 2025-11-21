@@ -1,6 +1,6 @@
-package co.edu.uniquindio.hospital;
+package co.edu.uniquindio.hospital.creational.singleton;
 
-import co.edu.uniquindio.hospital.models.*;
+import co.edu.uniquindio.hospital.*;
 
 import java.util.ArrayList;
 import java.util.List;
