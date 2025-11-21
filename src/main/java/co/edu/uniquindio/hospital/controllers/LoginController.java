@@ -1,3 +1,4 @@
+// src/main/java/co/edu/uniquindio/hospital/controllers/LoginController.java
 package co.edu.uniquindio.hospital.controllers;
 
 import co.edu.uniquindio.hospital.*;
@@ -39,10 +40,10 @@ public class LoginController {
             String titulo = "";
 
             if (personaEncontrada instanceof Admin) {
-                fxml = "/co/edu/uniquindio/hospital/dashboardAdmin.fxml";
+                fxml = "/co/edu/uniquindio/hospital/DashboardAdmin.fxml";
                 titulo = "Dashboard Administrador - Hospital";
             } else if (personaEncontrada instanceof Medico) {
-                fxml = "/co/edu/uniquindio/hospital/dashboardMedico.fxml";
+                fxml = "/co/edu/uniquindio/hospital/DashboardMedico.fxml";
                 titulo = "Dashboard Médico - Hospital";
             }
 

@@ -1,3 +1,4 @@
+// src/main/java/co/edu/uniquindio/hospital/creational/singleton/Hospital.java
 package co.edu.uniquindio.hospital.creational.singleton;
 
 import co.edu.uniquindio.hospital.*;
@@ -34,9 +35,13 @@ public class Hospital {
         userAdmin.setPerson(admin);
         agregarPersona(admin);
 
-        System.out.println("=== DATOS DE PRUEBA CARGADOS ===");
-        System.out.println("Total Personas: " + listPersonas.size());
-        System.out.println("Total Citas: " + listCitas.size());
+        // Crear Admin único
+        UserAccount userMedico = new UserAccount("medico", "medico", null, TipoUsuario.MEDICO);
+        Medico medico = new Medico("ADM001", "1000000", "Administrador Sistema",
+                "admin@hospital.com", "3001234567",userMedico,Especialidad.CARDIOLOGIA,"1010",true);
+        medico.setUserAccount(userMedico);
+        userMedico.setPerson(medico);
+        agregarPersona(medico);
     }
 
     // Métodos CRUD para Personas
