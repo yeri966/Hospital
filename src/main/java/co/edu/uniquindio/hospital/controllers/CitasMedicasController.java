@@ -21,7 +21,6 @@ public class CitasMedicasController {
 
     private Hospital hospital = Hospital.getInstance();
     private Medico medicoActual;
-    private ObservableList<Cita> todasLasCitas = FXCollections.observableArrayList();
 
     @FXML private TableView<Cita> tablaCitas;
     @FXML private TableColumn<Cita, String> colId;
@@ -31,16 +30,6 @@ public class CitasMedicasController {
     @FXML private TableColumn<Cita, String> colDocumento;
     @FXML private TableColumn<Cita, String> colMotivo;
     @FXML private TableColumn<Cita, String> colEstado;
-    @FXML private TableColumn<Cita, String> colAcciones;
-
-    @FXML private Label lblCitasProgramadas;
-    @FXML private Label lblCitasAtendidas;
-    @FXML private Label lblCitasHoy;
-
-    @FXML private ComboBox<String> cmbFiltroEstado;
-    @FXML private DatePicker dpFiltroFecha;
-    @FXML private Button btnFiltrar;
-    @FXML private Button btnLimpiarFiltros;
 
     @FXML private Button btnAtenderCita;
     @FXML private Button btnVerDetalles;
@@ -62,9 +51,7 @@ public class CitasMedicasController {
         }
 
         configurarTabla();
-        configurarFiltros();
         cargarCitasMedico();
-        actualizarEstadisticas();
 
         System.out.println("=== INICIALIZACIÓN COMPLETA ===");
     }
@@ -154,21 +141,6 @@ public class CitasMedicasController {
     }
 
     /**
-     * Configura los filtros
-     */
-    private void configurarFiltros() {
-        // Configurar ComboBox de estados
-        ObservableList<String> estados = FXCollections.observableArrayList(
-                "Todos",
-                "Programada",
-                "Atendida",
-                "Cancelada"
-        );
-        cmbFiltroEstado.setItems(estados);
-        cmbFiltroEstado.setValue("Todos");
-    }
-
-    /**
      * Carga todas las citas asignadas al médico actual
      */
     private void cargarCitasMedico() {
@@ -191,74 +163,11 @@ public class CitasMedicasController {
                 })
                 .collect(Collectors.toList());
 
-        todasLasCitas = FXCollections.observableArrayList(citasMedico);
-        tablaCitas.setItems(todasLasCitas);
+        ObservableList<Cita> citasObservable = FXCollections.observableArrayList(citasMedico);
+        tablaCitas.setItems(citasObservable);
 
         System.out.println("✅ Total citas del médico: " + citasMedico.size());
         System.out.println("=== CITAS CARGADAS ===\n");
-    }
-
-    /**
-     * Actualiza las estadísticas mostradas
-     */
-    private void actualizarEstadisticas() {
-        if (medicoActual == null) return;
-
-        long programadas = todasLasCitas.stream()
-                .filter(cita -> cita.getEstado() == EstadoCita.PROGRAMADA)
-                .count();
-
-        long atendidas = todasLasCitas.stream()
-                .filter(cita -> cita.getEstado() == EstadoCita.ATENDIDA)
-                .count();
-
-        long citasHoy = todasLasCitas.stream()
-                .filter(cita -> cita.getFecha().equals(LocalDate.now()))
-                .filter(cita -> cita.getEstado() != EstadoCita.CANCELADA)
-                .count();
-
-        lblCitasProgramadas.setText("Total: " + programadas);
-        lblCitasAtendidas.setText("Total: " + atendidas);
-        lblCitasHoy.setText("Hoy: " + citasHoy);
-    }
-
-    /**
-     * Filtra las citas según los criterios seleccionados
-     */
-    @FXML
-    void onFiltrar(ActionEvent event) {
-        List<Cita> citasFiltradas = todasLasCitas.stream()
-                .filter(this::filtrarPorEstado)
-                .filter(this::filtrarPorFecha)
-                .collect(Collectors.toList());
-
-        tablaCitas.setItems(FXCollections.observableArrayList(citasFiltradas));
-    }
-
-    /**
-     * Limpia todos los filtros
-     */
-    @FXML
-    void onLimpiarFiltros(ActionEvent event) {
-        cmbFiltroEstado.setValue("Todos");
-        dpFiltroFecha.setValue(null);
-        tablaCitas.setItems(todasLasCitas);
-    }
-
-    private boolean filtrarPorEstado(Cita cita) {
-        String estadoSeleccionado = cmbFiltroEstado.getValue();
-        if (estadoSeleccionado == null || estadoSeleccionado.equals("Todos")) {
-            return true;
-        }
-        return cita.getEstado().toString().equals(estadoSeleccionado);
-    }
-
-    private boolean filtrarPorFecha(Cita cita) {
-        LocalDate fechaFiltro = dpFiltroFecha.getValue();
-        if (fechaFiltro == null) {
-            return true;
-        }
-        return cita.getFecha().equals(fechaFiltro);
     }
 
     /**
@@ -303,7 +212,6 @@ public class CitasMedicasController {
                     Alert.AlertType.INFORMATION);
 
             tablaCitas.refresh();
-            actualizarEstadisticas();
         }
     }
 
@@ -366,7 +274,6 @@ public class CitasMedicasController {
                     Alert.AlertType.INFORMATION);
 
             tablaCitas.refresh();
-            actualizarEstadisticas();
         }
     }
 
@@ -448,7 +355,6 @@ public class CitasMedicasController {
                     Alert.AlertType.INFORMATION);
 
             tablaCitas.refresh();
-            actualizarEstadisticas();
         });
     }
 
