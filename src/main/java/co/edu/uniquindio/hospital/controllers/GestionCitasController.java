@@ -1,7 +1,8 @@
 package co.edu.uniquindio.hospital.controllers;
 
 import co.edu.uniquindio.hospital.*;
-import co.edu.uniquindio.hospital.creational.singleton.Hospital;
+import co.edu.uniquindio.hospital.structural.facade.CitaFacade;
+import co.edu.uniquindio.hospital.structural.facade.CitaException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,11 +15,16 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Controlador para la gestión de citas
+ * UTILIZA PATRÓN FACADE para simplificar las operaciones
+ */
 public class GestionCitasController {
 
-    private Hospital hospital = Hospital.getInstance();
+    // ==================== USO DEL PATRÓN FACADE ====================
+    private CitaFacade citaFacade = new CitaFacade();
+
     private Cita citaSeleccionada = null;
 
     @FXML private TextField txtId;
@@ -47,122 +53,87 @@ public class GestionCitasController {
 
     @FXML
     void initialize() {
-        System.out.println("=== INICIALIZANDO CONTROLADOR GESTIÓN DE CITAS (CON BUILDER) ===");
+        System.out.println("=== INICIALIZANDO CONTROLADOR CON PATRÓN FACADE ===");
         configurarComboBoxes();
         configurarTabla();
         cargarCitas();
         configurarSeleccionTabla();
         btnActualizar.setDisable(true);
+        txtId.setText(citaFacade.generarIdCita());
 
-        // Configurar listener para especialidad -> filtrar médicos
+        // Listener para filtrar médicos por especialidad
         cmbEspecialidad.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 filtrarMedicosPorEspecialidad(newVal);
             }
         });
 
-        System.out.println("=== INICIALIZACIÓN COMPLETA ===");
+        System.out.println("=== INICIALIZACIÓN CON FACADE COMPLETA ===");
     }
 
-    /**
-     * Configura los ComboBoxes con los datos del sistema
-     */
     private void configurarComboBoxes() {
-        // ComboBox de Especialidades
+        // Especialidades
         cmbEspecialidad.setItems(FXCollections.observableArrayList(Especialidad.values()));
 
-        // ComboBox de Pacientes
-        List<Paciente> pacientes = hospital.getListPersonas().stream()
-                .filter(persona -> persona instanceof Paciente)
-                .map(persona -> (Paciente) persona)
-                .collect(Collectors.toList());
+        // Pacientes - usando Facade
+        List<Paciente> pacientes = citaFacade.obtenerTodosPacientes();
         cmbPaciente.setItems(FXCollections.observableArrayList(pacientes));
+        configurarCellFactoryPaciente();
 
-        // Configurar cómo se muestran los pacientes en el ComboBox
+        // Médicos - usando Facade
+        cargarTodosMedicos();
+
+        // Horas disponibles
+        configurarHorasDisponibles();
+    }
+
+    private void configurarCellFactoryPaciente() {
         cmbPaciente.setCellFactory(param -> new ListCell<Paciente>() {
             @Override
             protected void updateItem(Paciente item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getNombre() + " - " + item.getDocumento());
-                }
+                setText(empty || item == null ? null : item.getNombre() + " - " + item.getDocumento());
             }
         });
         cmbPaciente.setButtonCell(new ListCell<Paciente>() {
             @Override
             protected void updateItem(Paciente item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getNombre() + " - " + item.getDocumento());
-                }
+                setText(empty || item == null ? null : item.getNombre() + " - " + item.getDocumento());
             }
         });
-
-        // ComboBox de Médicos (inicialmente todos)
-        cargarTodosMedicos();
-
-        // ComboBox de Horas disponibles
-        configurarHorasDisponibles();
     }
 
-    /**
-     * Carga todos los médicos en el ComboBox
-     */
     private void cargarTodosMedicos() {
-        List<Medico> medicos = hospital.getListPersonas().stream()
-                .filter(persona -> persona instanceof Medico)
-                .map(persona -> (Medico) persona)
-                .collect(Collectors.toList());
+        List<Medico> medicos = citaFacade.obtenerTodosMedicos();
         cmbMedico.setItems(FXCollections.observableArrayList(medicos));
+        configurarCellFactoryMedico();
+    }
 
-        // Configurar cómo se muestran los médicos
+    private void configurarCellFactoryMedico() {
         cmbMedico.setCellFactory(param -> new ListCell<Medico>() {
             @Override
             protected void updateItem(Medico item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getNombre() + " - " + item.getEspecialidad());
-                }
+                setText(empty || item == null ? null : item.getNombre() + " - " + item.getEspecialidad());
             }
         });
         cmbMedico.setButtonCell(new ListCell<Medico>() {
             @Override
             protected void updateItem(Medico item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getNombre() + " - " + item.getEspecialidad());
-                }
+                setText(empty || item == null ? null : item.getNombre() + " - " + item.getEspecialidad());
             }
         });
     }
 
-    /**
-     * Filtra los médicos según la especialidad seleccionada
-     */
     private void filtrarMedicosPorEspecialidad(Especialidad especialidad) {
-        List<Medico> medicosFiltrados = hospital.getListPersonas().stream()
-                .filter(persona -> persona instanceof Medico)
-                .map(persona -> (Medico) persona)
-                .filter(medico -> medico.getEspecialidad() == especialidad)
-                .collect(Collectors.toList());
-
+        List<Medico> medicosFiltrados = citaFacade.obtenerMedicosPorEspecialidad(especialidad);
         cmbMedico.setItems(FXCollections.observableArrayList(medicosFiltrados));
-        cmbMedico.setValue(null); // Limpiar selección anterior
-
-        System.out.println("Médicos filtrados por " + especialidad + ": " + medicosFiltrados.size());
+        cmbMedico.setValue(null);
+        System.out.println("[FACADE] Médicos filtrados por " + especialidad + ": " + medicosFiltrados.size());
     }
 
-    /**
-     * Configura las horas disponibles (8:00 AM - 5:00 PM)
-     */
     private void configurarHorasDisponibles() {
         List<String> horas = new ArrayList<>();
         for (int i = 8; i <= 17; i++) {
@@ -172,56 +143,46 @@ public class GestionCitasController {
         cmbHora.setItems(FXCollections.observableArrayList(horas));
     }
 
-    /**
-     * Configura las columnas de la tabla
-     */
     private void configurarTabla() {
-        colId.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getId()));
+        colId.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getId()));
 
-        colPaciente.setCellValueFactory(cellData -> {
-            Paciente paciente = cellData.getValue().getPaciente();
-            return new SimpleStringProperty(paciente != null ? paciente.getNombre() : "");
+        colPaciente.setCellValueFactory(cd -> {
+            Paciente p = cd.getValue().getPaciente();
+            return new SimpleStringProperty(p != null ? p.getNombre() : "");
         });
 
-        colMedico.setCellValueFactory(cellData -> {
-            Medico medico = cellData.getValue().getMedico();
-            return new SimpleStringProperty(medico != null ? medico.getNombre() : "");
+        colMedico.setCellValueFactory(cd -> {
+            Medico m = cd.getValue().getMedico();
+            return new SimpleStringProperty(m != null ? m.getNombre() : "");
         });
 
-        colEspecialidad.setCellValueFactory(cellData -> {
-            Especialidad especialidad = cellData.getValue().getEspecialidad();
-            return new SimpleStringProperty(especialidad != null ? especialidad.toString() : "");
+        colEspecialidad.setCellValueFactory(cd -> {
+            Especialidad e = cd.getValue().getEspecialidad();
+            return new SimpleStringProperty(e != null ? e.toString() : "");
         });
 
-        colFecha.setCellValueFactory(cellData -> {
-            LocalDate fecha = cellData.getValue().getFecha();
-            if (fecha != null) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                return new SimpleStringProperty(fecha.format(formatter));
-            }
-            return new SimpleStringProperty("");
+        colFecha.setCellValueFactory(cd -> {
+            LocalDate f = cd.getValue().getFecha();
+            return new SimpleStringProperty(f != null ?
+                    f.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "");
         });
 
-        colHora.setCellValueFactory(cellData -> {
-            LocalTime hora = cellData.getValue().getHora();
-            if (hora != null) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                return new SimpleStringProperty(hora.format(formatter));
-            }
-            return new SimpleStringProperty("");
+        colHora.setCellValueFactory(cd -> {
+            LocalTime h = cd.getValue().getHora();
+            return new SimpleStringProperty(h != null ?
+                    h.format(DateTimeFormatter.ofPattern("HH:mm")) : "");
         });
 
-        colPrecio.setCellValueFactory(cellData ->
-                new SimpleStringProperty(String.format("$%,.0f", cellData.getValue().getPrecio())));
+        colPrecio.setCellValueFactory(cd ->
+                new SimpleStringProperty(String.format("$%,.0f", cd.getValue().getPrecio())));
 
-        colEstado.setCellValueFactory(cellData -> {
-            EstadoCita estado = cellData.getValue().getEstado();
-            return new SimpleStringProperty(estado != null ? estado.toString() : "");
+        colEstado.setCellValueFactory(cd -> {
+            EstadoCita e = cd.getValue().getEstado();
+            return new SimpleStringProperty(e != null ? e.toString() : "");
         });
 
-        // Aplicar estilo a la columna de estado
-        colEstado.setCellFactory(column -> new TableCell<Cita, String>() {
+        // Estilo para columna estado
+        colEstado.setCellFactory(col -> new TableCell<Cita, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -231,32 +192,22 @@ public class GestionCitasController {
                 } else {
                     setText(item);
                     switch (item) {
-                        case "Programada":
-                            setStyle("-fx-text-fill: #2196F3; -fx-font-weight: bold;");
-                            break;
-                        case "Atendida":
-                            setStyle("-fx-text-fill: #4CAF50; -fx-font-weight: bold;");
-                            break;
-                        case "Cancelada":
-                            setStyle("-fx-text-fill: #F44336; -fx-font-weight: bold;");
-                            break;
-                        default:
-                            setStyle("-fx-text-fill: #757575; -fx-font-weight: bold;");
+                        case "Programada": setStyle("-fx-text-fill: #2196F3; -fx-font-weight: bold;"); break;
+                        case "Atendida": setStyle("-fx-text-fill: #4CAF50; -fx-font-weight: bold;"); break;
+                        case "Cancelada": setStyle("-fx-text-fill: #F44336; -fx-font-weight: bold;"); break;
+                        default: setStyle("-fx-text-fill: #757575; -fx-font-weight: bold;");
                     }
                 }
             }
         });
     }
 
-    /**
-     * Configura la selección de la tabla
-     */
     private void configurarSeleccionTabla() {
         tablaCitas.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    if (newValue != null) {
-                        citaSeleccionada = newValue;
-                        cargarCitaEnFormulario(newValue);
+                (obs, oldVal, newVal) -> {
+                    if (newVal != null) {
+                        citaSeleccionada = newVal;
+                        cargarCitaEnFormulario(newVal);
                         btnActualizar.setDisable(false);
                         btnAgregar.setDisable(true);
                     }
@@ -264,385 +215,198 @@ public class GestionCitasController {
         );
     }
 
-    /**
-     * Carga los datos de una cita en el formulario
-     */
     private void cargarCitaEnFormulario(Cita cita) {
         txtId.setText(cita.getId());
         cmbEspecialidad.setValue(cita.getEspecialidad());
         cmbPaciente.setValue(cita.getPaciente());
         cmbMedico.setValue(cita.getMedico());
         dpFecha.setValue(cita.getFecha());
-
         if (cita.getHora() != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            cmbHora.setValue(cita.getHora().format(formatter));
+            cmbHora.setValue(cita.getHora().format(DateTimeFormatter.ofPattern("HH:mm")));
         }
-
         txtPrecio.setText(String.valueOf(cita.getPrecio()));
         txtMotivo.setText(cita.getMotivo());
     }
 
     /**
-     * ==================== PATRÓN BUILDER ====================
-     * Agrega una nueva cita usando el patrón Builder
+     * ==================== AGREGAR CITA USANDO FACADE ====================
      */
     @FXML
     void onAgregar(ActionEvent event) {
-        if (!validarCampos()) {
-            return;
-        }
+        if (!validarCampos()) return;
 
         try {
-            // Generar ID único
-            String id = generarIdCita();
-
-            // Parsear la hora
-            String horaString = cmbHora.getValue();
-            LocalTime hora = LocalTime.parse(horaString, DateTimeFormatter.ofPattern("HH:mm"));
-
-            // Parsear el precio
+            String id = citaFacade.generarIdCita();
+            LocalTime hora = LocalTime.parse(cmbHora.getValue(), DateTimeFormatter.ofPattern("HH:mm"));
             double precio = Double.parseDouble(txtPrecio.getText().trim());
 
-            // ==================== USAR PATRÓN BUILDER ====================
-            System.out.println("✨ Creando cita usando patrón BUILDER...");
-
-            Cita nuevaCita = Cita.builder(
-                            id,
-                            cmbPaciente.getValue(),
-                            cmbMedico.getValue(),
-                            dpFecha.getValue(),
-                            hora)
-                    .especialidad(cmbEspecialidad.getValue())
-                    .precio(precio)
-                    .motivo(txtMotivo.getText().trim())
-                    .estado(EstadoCita.PROGRAMADA)
-                    .build();
-
-            System.out.println("✅ Cita construida exitosamente con Builder");
-
-            // Verificar disponibilidad
-            if (!verificarDisponibilidad(nuevaCita)) {
-                mostrarAlerta("Horario No Disponible",
-                        "El médico ya tiene una cita programada en ese horario",
-                        Alert.AlertType.WARNING);
-                return;
-            }
-
-            // Agregar al sistema
-            hospital.addCita(nuevaCita);
+            // ✨ USAR FACADE PARA CREAR LA CITA
+            Cita nuevaCita = citaFacade.crearCita(
+                    id,
+                    cmbPaciente.getValue(),
+                    cmbMedico.getValue(),
+                    cmbEspecialidad.getValue(),
+                    dpFecha.getValue(),
+                    hora,
+                    precio,
+                    txtMotivo.getText().trim()
+            );
 
             mostrarAlerta("Éxito",
-                    "✨ Cita agregada correctamente usando patrón Builder",
+                    "✨ Cita creada exitosamente usando FACADE\nID: " + nuevaCita.getId(),
                     Alert.AlertType.INFORMATION);
 
             cargarCitas();
             limpiarFormulario();
 
+        } catch (CitaException e) {
+            mostrarAlerta("Error de Validación", e.getMessage(), Alert.AlertType.WARNING);
         } catch (NumberFormatException e) {
-            mostrarAlerta("Error de Formato",
-                    "El precio debe ser un número válido",
-                    Alert.AlertType.ERROR);
-        } catch (IllegalArgumentException e) {
-            mostrarAlerta("Error de Validación",
-                    "Error al construir la cita: " + e.getMessage(),
-                    Alert.AlertType.ERROR);
+            mostrarAlerta("Error de Formato", "El precio debe ser un número válido", Alert.AlertType.ERROR);
         } catch (Exception e) {
-            mostrarAlerta("Error",
-                    "Error inesperado: " + e.getMessage(),
-                    Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "Error inesperado: " + e.getMessage(), Alert.AlertType.ERROR);
             e.printStackTrace();
         }
     }
 
     /**
-     * ==================== PATRÓN BUILDER ====================
-     * Actualiza una cita existente usando Builder para validación
+     * ==================== ACTUALIZAR CITA USANDO FACADE ====================
      */
     @FXML
     void onActualizar(ActionEvent event) {
         if (citaSeleccionada == null) {
-            mostrarAlerta("Error",
-                    "Debe seleccionar una cita de la tabla",
-                    Alert.AlertType.WARNING);
+            mostrarAlerta("Error", "Debe seleccionar una cita", Alert.AlertType.WARNING);
             return;
         }
 
-        if (!validarCampos()) {
-            return;
-        }
+        if (!validarCampos()) return;
 
         try {
-            // Parsear la hora
-            String horaString = cmbHora.getValue();
-            LocalTime hora = LocalTime.parse(horaString, DateTimeFormatter.ofPattern("HH:mm"));
-
-            // Parsear el precio
+            LocalTime hora = LocalTime.parse(cmbHora.getValue(), DateTimeFormatter.ofPattern("HH:mm"));
             double precio = Double.parseDouble(txtPrecio.getText().trim());
 
-            // ==================== USAR BUILDER PARA VALIDACIÓN ====================
-            // Crear una cita temporal usando Builder para validar los datos
-            System.out.println("✨ Validando actualización con patrón BUILDER...");
-
-            Cita citaValidada = Cita.builder(
-                            citaSeleccionada.getId(),
-                            cmbPaciente.getValue(),
-                            cmbMedico.getValue(),
-                            dpFecha.getValue(),
-                            hora)
-                    .especialidad(cmbEspecialidad.getValue())
-                    .precio(precio)
-                    .motivo(txtMotivo.getText().trim())
-                    .estado(citaSeleccionada.getEstado()) // Mantener el estado actual
-                    .build();
-
-            System.out.println("✅ Validación exitosa con Builder");
-
-            // Verificar disponibilidad (excluyendo la cita actual)
-            if (!verificarDisponibilidadActualizacion(citaValidada)) {
-                mostrarAlerta("Horario No Disponible",
-                        "El médico ya tiene una cita programada en ese horario",
-                        Alert.AlertType.WARNING);
-                return;
-            }
-
-            // Actualizar los datos de la cita original
-            citaSeleccionada.setPaciente(citaValidada.getPaciente());
-            citaSeleccionada.setMedico(citaValidada.getMedico());
-            citaSeleccionada.setEspecialidad(citaValidada.getEspecialidad());
-            citaSeleccionada.setFecha(citaValidada.getFecha());
-            citaSeleccionada.setHora(citaValidada.getHora());
-            citaSeleccionada.setPrecio(citaValidada.getPrecio());
-            citaSeleccionada.setMotivo(citaValidada.getMotivo());
-
-            hospital.updateCita(citaSeleccionada);
+            // ✨ USAR FACADE PARA ACTUALIZAR
+            citaFacade.actualizarCita(
+                    citaSeleccionada,
+                    cmbPaciente.getValue(),
+                    cmbMedico.getValue(),
+                    cmbEspecialidad.getValue(),
+                    dpFecha.getValue(),
+                    hora,
+                    precio,
+                    txtMotivo.getText().trim()
+            );
 
             mostrarAlerta("Éxito",
-                    "✨ Cita actualizada correctamente (validada con Builder)",
+                    "✨ Cita actualizada usando FACADE",
                     Alert.AlertType.INFORMATION);
 
-            tablaCitas.refresh();
             cargarCitas();
             limpiarFormulario();
 
+        } catch (CitaException e) {
+            mostrarAlerta("Error de Validación", e.getMessage(), Alert.AlertType.WARNING);
         } catch (NumberFormatException e) {
-            mostrarAlerta("Error de Formato",
-                    "El precio debe ser un número válido",
-                    Alert.AlertType.ERROR);
-        } catch (IllegalArgumentException e) {
-            mostrarAlerta("Error de Validación",
-                    "Error al validar la cita: " + e.getMessage(),
-                    Alert.AlertType.ERROR);
+            mostrarAlerta("Error de Formato", "El precio debe ser un número válido", Alert.AlertType.ERROR);
         } catch (Exception e) {
-            mostrarAlerta("Error",
-                    "Error inesperado: " + e.getMessage(),
-                    Alert.AlertType.ERROR);
-            e.printStackTrace();
+            mostrarAlerta("Error", "Error inesperado: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     /**
-     * Elimina una cita
+     * ==================== ELIMINAR CITA USANDO FACADE ====================
      */
     @FXML
     void onEliminar(ActionEvent event) {
-        Cita citaAEliminar = tablaCitas.getSelectionModel().getSelectedItem();
-
-        if (citaAEliminar == null) {
-            mostrarAlerta("Error",
-                    "Debe seleccionar una cita de la tabla",
-                    Alert.AlertType.WARNING);
+        Cita cita = tablaCitas.getSelectionModel().getSelectedItem();
+        if (cita == null) {
+            mostrarAlerta("Error", "Debe seleccionar una cita", Alert.AlertType.WARNING);
             return;
         }
 
-        // Confirmación
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Confirmar Eliminación");
-        confirmacion.setHeaderText("¿Está seguro que desea eliminar esta cita?");
-        confirmacion.setContentText("Paciente: " + citaAEliminar.getPaciente().getNombre() +
-                "\nMédico: " + citaAEliminar.getMedico().getNombre() +
-                "\nFecha: " + citaAEliminar.getFecha());
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmar Eliminación");
+        confirm.setHeaderText("¿Eliminar esta cita?");
+        confirm.setContentText("Paciente: " + cita.getPaciente().getNombre());
 
-        if (confirmacion.showAndWait().get() == ButtonType.OK) {
-            hospital.deleteCita(citaAEliminar.getId());
+        if (confirm.showAndWait().get() == ButtonType.OK) {
+            try {
+                // ✨ USAR FACADE PARA ELIMINAR
+                citaFacade.eliminarCita(cita.getId());
 
-            mostrarAlerta("Éxito",
-                    "Cita eliminada correctamente",
-                    Alert.AlertType.INFORMATION);
+                mostrarAlerta("Éxito", "Cita eliminada usando FACADE", Alert.AlertType.INFORMATION);
+                cargarCitas();
+                limpiarFormulario();
 
-            cargarCitas();
-            limpiarFormulario();
+            } catch (CitaException e) {
+                mostrarAlerta("Error", e.getMessage(), Alert.AlertType.ERROR);
+            }
         }
     }
 
-    /**
-     * Limpia el formulario
-     */
     @FXML
     void onLimpiar(ActionEvent event) {
         limpiarFormulario();
     }
 
-    /**
-     * Limpia todos los campos del formulario
-     */
     private void limpiarFormulario() {
-        txtId.clear();
-        txtId.setText(generarIdCita());
+        txtId.setText(citaFacade.generarIdCita());
         cmbEspecialidad.setValue(null);
         cmbPaciente.setValue(null);
         cmbMedico.setValue(null);
-        cargarTodosMedicos(); // Restaurar lista completa de médicos
+        cargarTodosMedicos();
         dpFecha.setValue(null);
         cmbHora.setValue(null);
         txtPrecio.clear();
         txtMotivo.clear();
-
         citaSeleccionada = null;
         tablaCitas.getSelectionModel().clearSelection();
         btnAgregar.setDisable(false);
         btnActualizar.setDisable(true);
     }
 
-    /**
-     * Valida que todos los campos obligatorios estén llenos
-     */
     private boolean validarCampos() {
         if (cmbEspecialidad.getValue() == null) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe seleccionar una especialidad",
-                    Alert.AlertType.WARNING);
-            cmbEspecialidad.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Seleccione especialidad", Alert.AlertType.WARNING);
             return false;
         }
-
         if (cmbPaciente.getValue() == null) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe seleccionar un paciente",
-                    Alert.AlertType.WARNING);
-            cmbPaciente.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Seleccione paciente", Alert.AlertType.WARNING);
             return false;
         }
-
         if (cmbMedico.getValue() == null) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe seleccionar un médico",
-                    Alert.AlertType.WARNING);
-            cmbMedico.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Seleccione médico", Alert.AlertType.WARNING);
             return false;
         }
-
         if (dpFecha.getValue() == null) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe seleccionar una fecha",
-                    Alert.AlertType.WARNING);
-            dpFecha.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Seleccione fecha", Alert.AlertType.WARNING);
             return false;
         }
-
-        // Validar que la fecha no sea pasada
-        if (dpFecha.getValue().isBefore(LocalDate.now())) {
-            mostrarAlerta("Fecha Inválida",
-                    "La fecha de la cita no puede ser anterior a hoy",
-                    Alert.AlertType.WARNING);
-            dpFecha.requestFocus();
-            return false;
-        }
-
         if (cmbHora.getValue() == null) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe seleccionar una hora",
-                    Alert.AlertType.WARNING);
-            cmbHora.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Seleccione hora", Alert.AlertType.WARNING);
             return false;
         }
-
         if (txtPrecio.getText().trim().isEmpty()) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe ingresar el precio de la consulta",
-                    Alert.AlertType.WARNING);
-            txtPrecio.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Ingrese el precio", Alert.AlertType.WARNING);
             return false;
         }
-
-        try {
-            double precio = Double.parseDouble(txtPrecio.getText().trim());
-            if (precio <= 0) {
-                mostrarAlerta("Precio Inválido",
-                        "El precio debe ser mayor a 0",
-                        Alert.AlertType.WARNING);
-                txtPrecio.requestFocus();
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Precio Inválido",
-                    "El precio debe ser un número válido",
-                    Alert.AlertType.WARNING);
-            txtPrecio.requestFocus();
-            return false;
-        }
-
         if (txtMotivo.getText().trim().isEmpty()) {
-            mostrarAlerta("Campos Incompletos",
-                    "Debe ingresar el motivo de la consulta",
-                    Alert.AlertType.WARNING);
-            txtMotivo.requestFocus();
+            mostrarAlerta("Campos Incompletos", "Ingrese el motivo", Alert.AlertType.WARNING);
             return false;
         }
-
         return true;
     }
 
-    /**
-     * Verifica que el médico esté disponible en el horario seleccionado
-     */
-    private boolean verificarDisponibilidad(Cita nuevaCita) {
-        return hospital.getListCitas().stream()
-                .filter(cita -> cita.getMedico().getId().equals(nuevaCita.getMedico().getId()))
-                .filter(cita -> cita.getFecha().equals(nuevaCita.getFecha()))
-                .filter(cita -> cita.getHora().equals(nuevaCita.getHora()))
-                .filter(cita -> cita.getEstado() != EstadoCita.CANCELADA)
-                .findAny()
-                .isEmpty();
-    }
-
-    /**
-     * Verifica disponibilidad excluyendo la cita que se está actualizando
-     */
-    private boolean verificarDisponibilidadActualizacion(Cita citaActualizada) {
-        return hospital.getListCitas().stream()
-                .filter(cita -> !cita.getId().equals(citaActualizada.getId())) // Excluir cita actual
-                .filter(cita -> cita.getMedico().getId().equals(citaActualizada.getMedico().getId()))
-                .filter(cita -> cita.getFecha().equals(citaActualizada.getFecha()))
-                .filter(cita -> cita.getHora().equals(citaActualizada.getHora()))
-                .filter(cita -> cita.getEstado() != EstadoCita.CANCELADA)
-                .findAny()
-                .isEmpty();
-    }
-
-    /**
-     * Carga todas las citas en la tabla
-     */
     private void cargarCitas() {
-        System.out.println("\n=== CARGANDO CITAS ===");
-        ObservableList<Cita> citas = FXCollections.observableArrayList(hospital.getListCitas());
+        // ✨ USAR FACADE PARA OBTENER CITAS
+        ObservableList<Cita> citas = FXCollections.observableArrayList(
+                citaFacade.obtenerTodasLasCitas()
+        );
         tablaCitas.setItems(citas);
         tablaCitas.refresh();
-        System.out.println("Total citas: " + citas.size());
-        System.out.println("=== CITAS CARGADAS ===\n");
+        System.out.println("[FACADE] Total citas cargadas: " + citas.size());
     }
 
-    /**
-     * Genera un ID único para una nueva cita
-     */
-    private String generarIdCita() {
-        int count = hospital.getListCitas().size();
-        return String.format("CIT%04d", count + 1);
-    }
-
-    /**
-     * Muestra un cuadro de diálogo de alerta
-     */
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);

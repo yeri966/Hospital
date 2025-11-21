@@ -1,4 +1,3 @@
-// src/main/java/co/edu/uniquindio/hospital/controllers/RegistroMedicoController.java
 package co.edu.uniquindio.hospital.controllers;
 
 import co.edu.uniquindio.hospital.*;
