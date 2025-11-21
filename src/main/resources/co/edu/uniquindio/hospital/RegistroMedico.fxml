@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="600.0" prefWidth="500.0"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="co.edu.uniquindio.hospital.controllers.RegistroMedicoController">
+
+    <center>
+        <AnchorPane prefHeight="600.0" prefWidth="500.0" style="-fx-background-color: #f5f5f5;" BorderPane.alignment="CENTER">
+            <children>
+                <!-- ENCABEZADO -->
+                <AnchorPane layoutX="0.0" layoutY="0.0" prefHeight="80.0" prefWidth="500.0" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <children>
+                        <Label layoutX="140.0" layoutY="20.0" text="REGISTRO DE MÉDICO" textFill="#424242">
+                            <font>
+                                <Font name="System Bold" size="20.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="180.0" layoutY="50.0" text="Complete el formulario" textFill="#757575">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </AnchorPane>
+
+                <!-- FORMULARIO -->
+                <VBox layoutX="40.0" layoutY="100.0" prefHeight="420.0" prefWidth="420.0" spacing="12.0"
+                      style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5;">
+                    <padding>
+                        <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+                    </padding>
+                    <children>
+                        <!-- Nombre -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Nombre Completo:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="txtNombre" prefHeight="30.0" promptText="Ingrese nombre completo" />
+                            </children>
+                        </VBox>
+
+                        <!-- Documento -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Documento:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="txtDocumento" prefHeight="30.0" promptText="Número de documento" />
+                            </children>
+                        </VBox>
+
+                        <!-- Correo -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Correo Electrónico:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="txtCorreo" prefHeight="30.0" promptText="ejemplo@correo.com" />
+                            </children>
+                        </VBox>
+
+                        <!-- Teléfono -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Teléfono:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="txtTelefono" prefHeight="30.0" promptText="3001234567" />
+                            </children>
+                        </VBox>
+
+                        <!-- Licencia Médica -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Licencia Médica:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="txtLicenciaMedica" prefHeight="30.0" promptText="Número de licencia" />
+                            </children>
+                        </VBox>
+
+                        <!-- Especialidad -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Especialidad:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <ComboBox fx:id="cmbEspecialidad" prefHeight="30.0" prefWidth="370.0" promptText="Seleccione especialidad" />
+                            </children>
+                        </VBox>
+
+                        <Separator prefWidth="370.0">
+                            <VBox.margin>
+                                <Insets bottom="5.0" top="5.0" />
+                            </VBox.margin>
+                        </Separator>
+
+                        <!-- Usuario -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Usuario:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="txtUsuario" prefHeight="30.0" promptText="Nombre de usuario" />
+                            </children>
+                        </VBox>
+
+                        <!-- Contraseña -->
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label text="Contraseña:" textFill="#424242">
+                                    <font>
+                                        <Font name="System Bold" size="11.0" />
+                                    </font>
+                                </Label>
+                                <PasswordField fx:id="txtContrasenia" prefHeight="30.0" promptText="Mínimo 4 caracteres" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- BOTONES -->
+                <HBox layoutX="40.0" layoutY="535.0" spacing="10.0">
+                    <children>
+                        <Button fx:id="btnRegistrar" mnemonicParsing="false" onAction="#onRegistrar"
+                                prefHeight="35.0" prefWidth="205.0"
+                                style="-fx-background-color: #616161; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"
+                                text="REGISTRAR">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Button>
+
+                        <Button fx:id="btnCancelar" mnemonicParsing="false" onAction="#onCancelar"
+                                prefHeight="35.0" prefWidth="205.0"
+                                style="-fx-background-color: white; -fx-text-fill: #616161; -fx-border-color: #bdbdbd; -fx-font-weight: bold; -fx-background-radius: 4; -fx-border-radius: 4;"
+                                text="CANCELAR">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </HBox>
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>

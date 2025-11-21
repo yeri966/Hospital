@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="700.0" prefWidth="1100.0"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="co.edu.uniquindio.hospital.controllers.DashboardMedicoController">
+
+    <!-- MENÚ LATERAL IZQUIERDO -->
+    <left>
+        <VBox prefHeight="700.0" prefWidth="230.0" style="-fx-background-color: #fafafa; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 0 0;" BorderPane.alignment="CENTER">
+            <children>
+                <!-- HEADER -->
+                <VBox alignment="CENTER" prefHeight="100.0" prefWidth="230.0" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                    <children>
+                        <Label text="HOSPITAL" textFill="#424242">
+                            <font>
+                                <Font name="System Bold" size="22.0" />
+                            </font>
+                        </Label>
+                        <Label text="Portal Médico" textFill="#757575">
+                            <font>
+                                <Font size="11.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="lblNombreMedico" text="Dr. Nombre" textFill="#424242">
+                            <font>
+                                <Font name="System Bold" size="13.0" />
+                            </font>
+                            <VBox.margin>
+                                <Insets top="8.0" />
+                            </VBox.margin>
+                        </Label>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" top="10.0" />
+                    </padding>
+                </VBox>
+
+                <Separator prefWidth="230.0" />
+
+                <!-- OPCIONES DEL MENÚ -->
+                <VBox prefHeight="500.0" prefWidth="230.0" spacing="2.0">
+                    <VBox.margin>
+                        <Insets top="15.0" />
+                    </VBox.margin>
+                    <children>
+                        <Button fx:id="btnMisCitas" alignment="CENTER_LEFT" graphicTextGap="12.0" mnemonicParsing="false"
+                                onAction="#onMisCitas" prefHeight="45.0" prefWidth="230.0"
+                                style="-fx-background-color: transparent; -fx-text-fill: #757575; -fx-font-size: 14px; -fx-cursor: hand;"
+                                text="📅  Mis Citas Asignadas">
+                            <padding>
+                                <Insets left="20.0" />
+                            </padding>
+                        </Button>
+                    </children>
+                </VBox>
+
+                <!-- ESPACIADOR -->
+                <Region VBox.vgrow="ALWAYS" />
+
+                <Separator prefWidth="230.0" />
+
+                <!-- BOTÓN CERRAR SESIÓN -->
+                <Button fx:id="btnCerrarSesion" alignment="CENTER_LEFT" graphicTextGap="12.0" mnemonicParsing="false"
+                        onAction="#onCerrarSesion" prefHeight="45.0" prefWidth="230.0"
+                        style="-fx-background-color: transparent; -fx-text-fill: #757575; -fx-font-size: 14px; -fx-cursor: hand;"
+                        text="🚪  Cerrar Sesión">
+                    <padding>
+                        <Insets left="20.0" />
+                    </padding>
+                    <VBox.margin>
+                        <Insets bottom="15.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+        </VBox>
+    </left>
+
+    <!-- ÁREA CENTRAL -->
+    <center>
+        <AnchorPane fx:id="contentArea" prefHeight="700.0" prefWidth="870.0" style="-fx-background-color: white;" BorderPane.alignment="CENTER">
+            <children>
+                <VBox alignment="CENTER" prefHeight="700.0" prefWidth="870.0" spacing="15.0">
+                    <children>
+                        <Label text="Portal del Médico" textFill="#424242">
+                            <font>
+                                <Font name="System Bold" size="26.0" />
+                            </font>
+                        </Label>
+                        <Label text="Bienvenido a su portal profesional" textFill="#757575">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>
